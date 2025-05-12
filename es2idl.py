@@ -20,6 +20,7 @@ class NewSyntaxConfig:
     usePrototypeInterface = True
     useValueSyntax = True
     useAtAtSymbol = True
+    useInheritanceExpression = True
 
 
 class CompatibleConfig:
@@ -30,6 +31,7 @@ class CompatibleConfig:
     usePrototypeInterface = False
     useValueSyntax = False
     useAtAtSymbol = False
+    useInheritanceExpression = False
 
 
 config = NewSyntaxConfig
@@ -4702,6 +4704,11 @@ class IDLPrinter:
 
                 if not config.usePrototypeInterface:
                     extendedAttributes.append('PrototypeSlot="{}"'.format(prototypeSlot))
+
+        if inheritance == "null" and not config.useInheritanceExpression:
+            inheritance = None
+            extendedAttributes.append("PrototypeSlot=null")
+
 
         if kind in ["interface", "prototype"]:
             extendedAttributes.append("NoBrandCheck")

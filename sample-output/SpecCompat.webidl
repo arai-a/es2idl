@@ -109,8 +109,8 @@ interface Global {
 
 // Object Objects
 // https://tc39.es/ecma262/#sec-object-objects
-[Exposed=*, NoBrandCheck, NoNewTargetCheck, NoObjectCreation, NoUnforgeablesSlot, CustomPrototype]
-interface Object : null {
+[Exposed=*, PrototypeSlot=null, NoBrandCheck, NoNewTargetCheck, NoObjectCreation, NoUnforgeablesSlot, CustomPrototype]
+interface Object {
   [Length="1"]
   constructor(optional any value);
 
