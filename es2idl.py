@@ -21,6 +21,19 @@ class NewSyntaxConfig:
     useValueSyntax = True
     useAtAtSymbol = True
     useInheritanceExpression = True
+    useParameterCoercionType = False
+
+
+class NewSyntaxWithTypeConfig:
+    useRawName = True
+    useProperty = True
+    useDescriptorSyntax = True
+    useInstanceSyntax = True
+    usePrototypeInterface = True
+    useValueSyntax = True
+    useAtAtSymbol = True
+    useInheritanceExpression = True
+    useParameterCoercionType = True
 
 
 class CompatibleConfig:
@@ -32,6 +45,7 @@ class CompatibleConfig:
     useValueSyntax = False
     useAtAtSymbol = False
     useInheritanceExpression = False
+    useParameterCoercionType = False
 
 
 config = NewSyntaxConfig
@@ -892,18 +906,28 @@ class Parameter:
     """A parameter of a function."""
 
     def __init__(self, name, optional, variadic):
+        self.coercionType = None
         self.name = name
         self.optional = optional
         self.variadic = variadic
 
+    def typeStr(self):
+        if not config.useParameterCoercionType:
+            return "any"
+
+        if self.coercionType is None:
+            return "any"
+
+        return "type<{}>".format(self.coercionType)
+
     def __str__(self):
         if self.optional:
-            return "optional any " + self.name
+            return "optional {} {}".format(self.typeStr(), self.name)
 
         if self.variadic:
-            return "any... " + self.name
+            return "{}... {}".format(self.typeStr(), self.name)
 
-        return "any " + self.name
+        return "{} {}".format(self.typeStr(), self.name)
 
     def isRequired(self):
         return not self.optional and not self.variadic
@@ -3396,6 +3420,78 @@ class TreeWalker:
             raise IDLError("Unhandled list item with \"has \": {}".format(text))
 
     @classmethod
+    def maybeParseParameterTypes(cls, node, context):
+        if isinstance(context, PropertyContext):
+            prop = context.prop
+            if prop.isDataProperty():
+                if prop.getValue() is None:
+                    # Array.prototype [ %Symbol.unscopables% ]
+                    return
+
+                params = prop.getValue().params
+            else:
+                # This is accessor.
+                # We may want to provide types for accessor as well, but
+                # not for now.
+                return
+        elif isinstance(context, ConstructorContext):
+            params = context.ctor.params
+        else:
+            return
+
+        paramMap = {}
+        for p in params.params:
+            paramMap[p.name] = p
+
+        text = str(node.text_content())
+
+        topLevelIndent = None
+
+        for line in text.split("\n"):
+            m = re.match(r"^( *)1\. *(.+)", line)
+            if not m:
+                continue
+
+            indent = m.group(1)
+            step = m.group(2)
+
+            if topLevelIndent is None:
+                topLevelIndent = indent
+
+            if indent != topLevelIndent:
+                # This is possibly inside a branch, and there can be
+                # other branch that performs different operation
+
+                if step.startswith("Return"):
+                    # If early return appears, all the subsequent operations
+                    # are conditional, and no more types can be extracted.
+                    return
+
+                continue
+
+            if step.startswith("If "):
+                continue
+            if step.startswith("Else if "):
+                continue
+            if step.startswith("Otherwise, "):
+                continue
+
+            m = re.match(r".*?(To[A-Za-z0-9_]+)\(_([A-Za-z0-9_]+)_\)", step)
+            if not m:
+                continue
+
+            op = m.group(1)
+            var = m.group(2)
+
+            if var not in paramMap:
+                continue
+
+            if paramMap[var].coercionType is not None:
+                raise IDLError("Conflicting parameter coercion type: {} vs {}".format(paramMap[var].coercionType, op))
+
+            paramMap[var].coercionType = op
+
+    @classmethod
     def handleUnscopables(cls, node, context):
         text = str(node.text_content()).strip()
 
@@ -3452,6 +3548,8 @@ class TreeWalker:
         context = cls.maybeCurrentOperandContext()
         if context is None:
             return
+
+        cls.maybeParseParameterTypes(node, context)
 
         if isinstance(context, PropertyContext):
             prop = context.prop
@@ -4833,13 +4931,15 @@ class IDLPrinter:
 parser = argparse.ArgumentParser(prog="es2idl.py")
 parser.add_argument("-v", "--verbose", action="store_true", default=False)
 parser.add_argument("-o", dest="SPEC_WEBIDL_PATH")
-parser.add_argument("-c", dest="CONFIG", choices=["new", "compat"])
+parser.add_argument("-c", dest="CONFIG", choices=["new", "new-type", "compat"])
 parser.add_argument("SPEC_HTML_PATHS", nargs="*")
 
 options = parser.parse_args()
 
 if options.CONFIG == "new":
     config = NewSyntaxConfig
+elif options.CONFIG == "new-type":
+    config = NewSyntaxWithTypeConfig
 elif options.CONFIG == "compat":
     config = CompatibleConfig
 

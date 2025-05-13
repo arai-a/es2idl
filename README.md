@@ -13,6 +13,7 @@ Running the following command will create a virtualenv, download the specs, and 
 
 The specs are downloaded in `specs/` directory, and the generated files are located in `output/`, with the following names:
   * `SpecNew.webidl` : Utilizes newly-introduced syntax to represent ECMAScript-specific characteristics
+  * `SpecNewType.webidl` : Utilizes newly-introduced syntax and experimental parameter types to represent ECMAScript-specific characteristics
   * `SpecCompat.webidl` : Utilizes extended attributes to represent ECMAScript-specific characteristics
 
 Passing `--cached` skips the preparation such as downloading the specs.

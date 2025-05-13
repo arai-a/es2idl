@@ -52,4 +52,5 @@ fi
 
 mkdir -p output
 ./.venv/bin/python3 ./es2idl.py -c new -o output/SpecNew.webidl ${SPECS}
+./.venv/bin/python3 ./es2idl.py -c new-type -o output/SpecNewType.webidl ${SPECS}
 ./.venv/bin/python3 ./es2idl.py -c compat -o output/SpecCompat.webidl ${SPECS}
