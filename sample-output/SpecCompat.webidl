@@ -1669,6 +1669,9 @@ interface GeneratorFunction : Function {
   [DataProperty, NonEnumerable, Configurable, StringValue="GeneratorFunction"]
   static attribute any name;
 
+  [Name="prototype", DataProperty, NonEnumerable, Configurable, ObjectValue="GeneratorPrototype"]
+  attribute any _prototype;
+
   [Instance, DataProperty, NonEnumerable, Configurable]
   attribute any length;
   [Instance, DataProperty, NonEnumerable, Configurable]
@@ -1687,6 +1690,9 @@ interface AsyncGeneratorFunction : Function {
   [DataProperty, NonEnumerable, Configurable, StringValue="AsyncGeneratorFunction"]
   static attribute any name;
 
+  [Name="prototype", DataProperty, NonEnumerable, Configurable, ObjectValue="AsyncGeneratorPrototype"]
+  attribute any _prototype;
+
   [Instance, DataProperty, NonEnumerable, Configurable]
   attribute any length;
   [Instance, DataProperty, NonEnumerable, Configurable]
@@ -1699,6 +1705,8 @@ interface AsyncGeneratorFunction : Function {
 // https://tc39.es/ecma262/#sec-properties-of-generator-prototype
 [PrototypeSlot="Iterator.prototype"]
 namespace GeneratorPrototype {
+  [Name="constructor", DataProperty, NonEnumerable, Configurable, ObjectValue="GeneratorFunction.prototype"]
+  attribute any _constructor;
   [Name="Symbol.toStringTag", DataProperty, NonEnumerable, Configurable, StringValue="Generator"]
   attribute any _symbol_toStringTag;
 
@@ -1714,6 +1722,8 @@ namespace GeneratorPrototype {
 // https://tc39.es/ecma262/#sec-properties-of-asyncgenerator-prototype
 [PrototypeSlot="AsyncIteratorPrototype"]
 namespace AsyncGeneratorPrototype {
+  [Name="constructor", DataProperty, NonEnumerable, Configurable, ObjectValue="AsyncGeneratorFunction.prototype"]
+  attribute any _constructor;
   [Name="Symbol.toStringTag", DataProperty, NonEnumerable, Configurable, StringValue="AsyncGenerator"]
   attribute any _symbol_toStringTag;
 

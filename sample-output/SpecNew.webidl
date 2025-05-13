@@ -1181,6 +1181,8 @@ interface GeneratorFunction : Function {
 
   static property any name = "GeneratorFunction";
 
+  readonly property any prototype = GeneratorPrototype;
+
   instance property any length;
   instance property any name;
   instance non_configurable property any prototype;
@@ -1195,6 +1197,8 @@ interface AsyncGeneratorFunction : Function {
 
   static property any name = "AsyncGeneratorFunction";
 
+  readonly property any prototype = AsyncGeneratorPrototype;
+
   instance readonly property any length;
   instance property any name;
   instance non_configurable property any prototype;
@@ -1204,6 +1208,7 @@ interface AsyncGeneratorFunction : Function {
 // https://tc39.es/ecma262/#sec-properties-of-generator-prototype
 [NoBrandCheck]
 prototype GeneratorPrototype : Iterator.prototype {
+  readonly property any constructor = GeneratorFunction.prototype;
   readonly property any @@toStringTag = "Generator";
 
   non_enumerable any next(any value);
@@ -1215,6 +1220,7 @@ prototype GeneratorPrototype : Iterator.prototype {
 // https://tc39.es/ecma262/#sec-properties-of-asyncgenerator-prototype
 [NoBrandCheck]
 prototype AsyncGeneratorPrototype : AsyncIteratorPrototype {
+  readonly property any constructor = AsyncGeneratorFunction.prototype;
   readonly property any @@toStringTag = "AsyncGenerator";
 
   non_enumerable any next(any value);

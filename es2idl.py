@@ -4476,9 +4476,15 @@ class IDLPrinter:
                     print("  {}{} {};".format(prefix, member.typeName, prop.name), file=self.out)
                     continue
 
-
                 if prop.isDataProperty() and isinstance(prop.getValue(), ObjectRefValue):
-                    continue
+                     if isGlobal:
+                         continue
+                     if owner.qualifiedName:
+                         name = owner.qualifiedName + "." + prop.name
+                     else:
+                         name = owner.name + "." + prop.name
+                     if name == evaluateExpression(prop.getValue().value).qualifiedName:
+                         continue
 
                 if prop.isDataProperty() and prop.name == "Symbol.unscopables":
                     # Defined internally.
